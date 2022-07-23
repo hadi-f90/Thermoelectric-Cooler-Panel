@@ -49,47 +49,29 @@ tempchk = Tempchecker
 
 def turnup():
     # inside_temp_c, inside_temp_f = Tempchecker.read_inside_temp()
-    if (Status.TempTarget == 40):
-        Status.TempTarget = 40
-        Status.WriteConfig('TempTarget', str(Status.TempTarget))
-        print('Turn up to: ' + str(Status.TempTarget))
-        lcd.clear()
-        lcd.message('Target:' + str(Status.TempTarget) + ' ' + chr(223) + 'C')
+    Status.TempTarget = (
+        40 if (Status.TempTarget == 40) else Status.TempTarget + 0.5
+    )
 
-        if Status.isConnected is True:
-            socketIO.emit('targettemp', str(Status.TempTarget))
-    else:
-        Status.TempTarget = Status.TempTarget + 0.5
-        Status.WriteConfig('TempTarget', str(Status.TempTarget))
-        print('Turn up to: ' + str(Status.TempTarget))
-        lcd.clear()
-        lcd.message('Target:' + str(Status.TempTarget) + ' ' + chr(223) + 'C')
+    Status.WriteConfig('TempTarget', str(Status.TempTarget))
+    print(f'Turn up to: {str(Status.TempTarget)}')
+    lcd.clear()
+    lcd.message(f'Target:{str(Status.TempTarget)} {chr(223)}C')
 
-        if Status.isConnected is True:
-            socketIO.emit('targettemp', str(Status.TempTarget))
+    if Status.isConnected is True:
+        socketIO.emit('targettemp', str(Status.TempTarget))
 
 
 def turndown():
-    if (Status.TempTarget == 0):
-        Status.TempTarget = 0
-        Status.WriteConfig('TempTarget', str(Status.TempTarget))
-        print('Turn down to: ' + str(Status.TempTarget))
+    Status.TempTarget = 0 if (Status.TempTarget == 0) else Status.TempTarget - 0.5
+    Status.WriteConfig('TempTarget', str(Status.TempTarget))
+    print(f'Turn down to: {str(Status.TempTarget)}')
 
-        lcd.clear()
-        lcd.message('Target:' + str(Status.TempTarget) + ' ' + chr(223) + 'C')
+    lcd.clear()
+    lcd.message(f'Target:{str(Status.TempTarget)} {chr(223)}C')
 
-        if Status.isConnected is True:
-            socketIO.emit('targettemp', str(Status.TempTarget))
-    else:
-        Status.TempTarget = Status.TempTarget - 0.5
-        Status.WriteConfig('TempTarget', str(Status.TempTarget))
-        print('Turn down to: ' + str(Status.TempTarget))
-
-        lcd.clear()
-        lcd.message('Target:' + str(Status.TempTarget) + ' ' + chr(223) + 'C')
-
-        if Status.isConnected is True:
-            socketIO.emit('targettemp', str(Status.TempTarget))
+    if Status.isConnected is True:
+        socketIO.emit('targettemp', str(Status.TempTarget))
 
 
 def modechange():
@@ -124,11 +106,23 @@ def getTemps():
         housing_temp_c, housing_temp_f = tempchk.read_housing_temp()
         outside_temp_c, outside_temp_f = tempchk.read_outside_temp()
 
-        print('Inside: ' + str(inside_temp_c) +
-              ' Housing: ' + str(housing_temp_c) +
-              ' Outisde: ' + str(outside_temp_c) +
-              ' Target: ' + str(Status.TempTarget) +
-              ' Time: ' + datetime.now().strftime('%I:%M:%S %p'))
+        print(
+            (
+                (
+                    (
+                        (f'Inside: {str(inside_temp_c)}' + ' Housing: ')
+                        + str(housing_temp_c)
+                        + ' Outisde: '
+                    )
+                    + str(outside_temp_c)
+                    + ' Target: '
+                )
+                + str(Status.TempTarget)
+                + ' Time: '
+            )
+            + datetime.now().strftime('%I:%M:%S %p')
+        )
+
 
         if (housing_temp_c > 70) or (inside_temp_c > 40):
             Peltier.off()
@@ -146,25 +140,24 @@ def getTemps():
                     Peltier.value = 0
                     Peltier.toggle()
                     Pump.on()
-                    Status.pumpCheck = "ON"
                     Status.peltierCheck = "ON"
+                    Status.pumpCheck = "ON"
                     RadFan.value = 0
                     RadFan.toggle()
                     Status.radiatorFan = 'ON'
-                    print('Changed to ' + Status.peltierCheck)
+                    print(f'Changed to {Status.peltierCheck}')
 
                     InsideFan.value = 0
                     InsideFan.toggle()
                     Status.insideFanCheck = 'ON'
                 else:
                     print('Peltier is already on')
-            else:
-                if Peltier.is_active is True:
-                    Peltier.off()
-                    Status.peltierCheck = "OFF"
-                    print('Changed to ' + Status.peltierCheck)
-                    InsideFan.off()
-                    Status.insideFanCheck = 'OFF'
+            elif Peltier.is_active is True:
+                Peltier.off()
+                Status.peltierCheck = "OFF"
+                print(f'Changed to {Status.peltierCheck}')
+                InsideFan.off()
+                Status.insideFanCheck = 'OFF'
         else:
             HousingFan.value = 0.5
             HousingFan.toggle()
@@ -181,20 +174,19 @@ def getTemps():
                     RadFan.value = 0
                     RadFan.toggle()
                     Status.radiatorFan = 'ON'
-                    print('Changed to ' + Status.peltierCheck)
+                    print(f'Changed to {Status.peltierCheck}')
 
                     InsideFan.value = 0.5
                     InsideFan.toggle()
                     Status.insideFanCheck = 'ON'
                 else:
                     print('Peltier is already on')
-            else:
-                if Peltier.is_active is True:
-                    Peltier.off()
-                    Status.peltierCheck = "OFF"
-                    print('Changed to ' + Status.peltierCheck)
-                    InsideFan.off()
-                    Status.insideFanCheck = 'OFF'
+            elif Peltier.is_active is True:
+                Peltier.off()
+                Status.peltierCheck = "OFF"
+                print(f'Changed to {Status.peltierCheck}')
+                InsideFan.off()
+                Status.insideFanCheck = 'OFF'
 
         if Status.isConnected is True:
             socketIO.emit('tempdata', json.dumps(
@@ -213,9 +205,30 @@ def getTemps():
                 }, sort_keys=False, indent=4))
 
         lcd.clear()
-        lcd.message('Current:' + str(inside_temp_c)[:4] + ' ' +
-                    chr(223) + 'C' + '\n' + ' Target:' +
-                    str(Status.TempTarget) + ' ' + chr(223) + 'C')
+        lcd.message(
+            (
+                (
+                    (
+                        (
+                            (
+                                (
+                                    f'Current:{str(inside_temp_c)[:4]} '
+                                    + chr(223)
+                                )
+                                + 'C'
+                            )
+                            + '\n'
+                        )
+                        + ' Target:'
+                    )
+                    + str(Status.TempTarget)
+                    + ' '
+                )
+                + chr(223)
+                + 'C'
+            )
+        )
+
 
     time.sleep(interval)
 

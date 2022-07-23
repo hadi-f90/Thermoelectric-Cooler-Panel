@@ -20,17 +20,17 @@ def getTemps():
     count = 0
     while True:
 
-        if (count == 0):
+        if count == 0:
             inside_temp_c = 19
             housing_temp_c = 22
             outside_temp_c = 27
 
-        if (count == 1):
+        elif count == 1:
             inside_temp_c = 13
             housing_temp_c = 24
             outside_temp_c = 33
 
-        if (count == 2):
+        elif count == 2:
             inside_temp_c = 10
             housing_temp_c = 29
             outside_temp_c = 27
@@ -43,11 +43,23 @@ def getTemps():
 
         count = count + 1
 
-        print('Inside: ' + str(inside_temp_c) +
-              ' Housing: ' + str(housing_temp_c) +
-              ' Outisde: ' + str(outside_temp_c) +
-              ' Target: ' + str(statz.TempTarget) +
-              ' Time: ' + datetime.now().strftime('%I:%M:%S %p'))
+        print(
+            (
+                (
+                    (
+                        (f'Inside: {str(inside_temp_c)}' + ' Housing: ')
+                        + str(housing_temp_c)
+                        + ' Outisde: '
+                    )
+                    + str(outside_temp_c)
+                    + ' Target: '
+                )
+                + str(statz.TempTarget)
+                + ' Time: '
+            )
+            + datetime.now().strftime('%I:%M:%S %p')
+        )
+
 
         if statz.isConnected is True:
             socketIO.emit('tempdata', json.dumps(

@@ -20,10 +20,8 @@ class Tempchecker(object):
         self.arg = arg
 
     def read_inside_temp_raw():
-        insideTemp = open(Tempchecker.insideSensor, 'r')
-        rawInside = insideTemp.readlines()
-        insideTemp.close()
-
+        with open(Tempchecker.insideSensor, 'r') as insideTemp:
+            rawInside = insideTemp.readlines()
         return rawInside
 
         # f = open(Tempchecker.device_file, 'r')
@@ -32,17 +30,13 @@ class Tempchecker(object):
         # return lines
 
     def read_housing_temp_raw():
-        housingTemp = open(Tempchecker.housingSensor, 'r')
-        rawHousing = housingTemp.readlines()
-        housingTemp.close()
-
+        with open(Tempchecker.housingSensor, 'r') as housingTemp:
+            rawHousing = housingTemp.readlines()
         return rawHousing
 
     def read_outside_temp_raw():
-        outsideTemp = open(Tempchecker.outsideSensor, 'r')
-        rawOutside = outsideTemp.readlines()
-        outsideTemp.close()
-
+        with open(Tempchecker.outsideSensor, 'r') as outsideTemp:
+            rawOutside = outsideTemp.readlines()
         return rawOutside
 
     def read_inside_temp():
