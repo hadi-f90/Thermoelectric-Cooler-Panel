@@ -21,33 +21,28 @@ class Status(object):
     mode = 'hipro'
     voltage = '0'
 
-    def SortData(data, char1, char2):
-        Sorted = data[data.find(char1) + 1: data.find(char2)]
-        return Sorted
+    def SortData(self, char1, char2):
+        return self[self.find(char1) + 1:self.find(char2)]
 
     def LoadConfig():
         PATH = './config.json'
         if os.path.isfile(PATH):
             print('File exists and is readable')
-            with open('config.json', 'r') as filez:
-                config = json.load(filez)
-                Status.TempTarget = float(config['TempTarget'])
-                print(str(Status.TempTarget))
         else:
             print('No file creating with default template')
             config = {'TempTarget': '24'}
             with open('config.json', 'w') as filez:
                 json.dump(config, filez)
 
-            with open('config.json', 'r') as filez:
-                config = json.load(filez)
-                Status.TempTarget = float(config['TempTarget'])
-                print(str(Status.TempTarget))
-
-    def WriteConfig(field, value):
         with open('config.json', 'r') as filez:
             config = json.load(filez)
-            config[field] = value
+            Status.TempTarget = float(config['TempTarget'])
+            print(Status.TempTarget)
+
+    def WriteConfig(self, value):
+        with open('config.json', 'r') as filez:
+            config = json.load(filez)
+            config[self] = value
 
         with open('config.json', 'w') as f:
             json.dump(config, f)
@@ -57,27 +52,26 @@ class Namespace(BaseNamespace):
 
     def Checkrecords():
         print('got recordinfo')
-        r = requests.get(Status.url + '/settingz')
+        r = requests.get(f'{Status.url}/settingz')
 
-        print('Record info:' + r.text)
+        print(f'Record info:{r.text}')
         jsonObject = json.loads(r.text)
         RecordNow = False
         for key in jsonObject:
             field = key['setname']
             value = key['value']
-            if field == 'recordid':
-                Status.recordId = value
-
             if field == 'interval':
                 Status.recordInterval = int(value)
 
+            elif field == 'recordid':
+                Status.recordId = value
+
             if field == 'mode':
                 Status.mode = value
-                print('mode:' + value)
+                print(f'mode:{value}')
 
-            if field == 'currentrecord':
-                if value != 'none':
-                    RecordNow = True
+            if field == 'currentrecord' and value != 'none':
+                RecordNow = True
 
         if RecordNow:
             Status.RecordData = True
@@ -131,7 +125,7 @@ class Namespace(BaseNamespace):
         data = Status.SortData(str(args), '{', '}')
         Status.TempTarget = float(data)
         Status.WriteConfig('TempTarget', str(Status.TempTarget))
-        print('target changed to: ' + data)
+        print(f'target changed to: {data}')
 
     def on_picheck(self, *args):
         data = Status.SortData(str(args), '{', '}')
@@ -142,4 +136,4 @@ class Namespace(BaseNamespace):
     def on_pimode(self, *args):
         data = Status.SortData(str(args), '{', '}')
         Status.mode = data
-        print('Mode changed to: ' + data)
+        print(f'Mode changed to: {data}')
